@@ -8,6 +8,7 @@ use actix_web::{middleware::Compress, web, App, FromRequest, HttpServer};
 use deadpool_postgres::Config;
 use dotenv;
 use tokio_postgres::NoTls;
+use actix_cors::Cors;
 
 // json - postgres example
 mod Json;
@@ -63,7 +64,7 @@ async fn main() -> std::io::Result<()> {
             }))
             .data(pool.clone())
             .data(redis_client.clone())
-            .wrap(Compress::default())
+            .wrap(Cors::default())
             .service(auth::auth_routes())
             .service(Json::json_routes())
             .service(errors::register_error_handlers())
@@ -78,4 +79,12 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:8000")?
     .run()
     .await
+}
+
+#[test]
+fn get_password_hash() {
+    let password = String::from("lu0990277996");
+    let hash = utils::password_hash::get_password_hash(&password);
+
+    println!("{}", hash.hash);
 }
